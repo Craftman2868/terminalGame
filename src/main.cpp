@@ -1,6 +1,8 @@
 #include <unistd.h>  // usleep
 #include <stdio.h>
 
+#include "debug.hpp"
+
 #include "maths.hpp"
 #include "render.hpp"
 #include "input.hpp"
@@ -15,10 +17,12 @@ int main(int argc, char *argv[])
     bool updated;
     mesh m;
 
+    debug_init();
+
     input_init();
     camera *cam = init();
 
-    // Cude:
+    // Cude:  // TODO
 
     m.push_back({{0, 1, 1}, {0, 1, 2}, {1, 1, 1}}); // Top
     m.push_back({{1, 1, 2}, {0, 1, 2}, {1, 1, 1}}); // Top
@@ -37,12 +41,22 @@ int main(int argc, char *argv[])
 
     m.push_back({{0, 0, 2}, {0, 0, 1}, {0, 1, 1}}); // Left
     m.push_back({{0, 1, 2}, {0, 1, 1}, {0, 0, 2}}); // Left
+    
+    // // Square
+
+    // m.push_back({{0, 1, 2}, {0, 0, 2}, {1, 1, 2}});
+    // m.push_back({{1, 0, 2}, {0, 0, 2}, {1, 1, 2}});
+
+    debug_log("Running...\n");
 
     running = true;
     while (running)
     {
+        debug_log("-------------------------\n");
         clear();
+
         putMesh(m);
+
         draw();
 
         updated = false;
@@ -84,19 +98,19 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'Z':
-                cam->pos = addVec3(cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
+                addVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
                 updated = true;
                 break;
             case 'S':
-                cam->pos = subVec3(cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
+                subVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
                 updated = true;
                 break;
             case 'Q':
-                cam->pos = subVec3(cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
+                subVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
                 updated = true;
                 break;
             case 'D':
-                cam->pos = addVec3(cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
+                addVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
                 updated = true;
                 break;
             case 'E':
@@ -122,6 +136,10 @@ int main(int argc, char *argv[])
 
     quit();
     input_quit();
+
+    debug_log("Quit\n");
+
+    debug_quit();
 
     return 0;
 }

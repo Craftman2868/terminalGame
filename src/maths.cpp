@@ -31,9 +31,27 @@ vec3 addVec3(vec3 v1, vec3 v2)
     return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z};
 }
 
+vec3 *addVec3(vec3 *v1, vec3 v2)
+{
+    v1->x += v2.x;
+    v1->y += v2.y;
+    v1->z += v2.z;
+
+    return v1;
+}
+
 vec3 subVec3(vec3 v1, vec3 v2)
 {
     return {v1.x - v2.x, v1.y - v2.y, v1.z - v2.z};
+}
+
+vec3 *subVec3(vec3 *v1, vec3 v2)
+{
+    v1->x -= v2.x;
+    v1->y -= v2.y;
+    v1->z -= v2.z;
+
+    return v1;
 }
 
 vec3 mulVec3(vec3 v1, vec3 v2)
@@ -41,9 +59,39 @@ vec3 mulVec3(vec3 v1, vec3 v2)
     return {v1.x * v2.x, v1.y * v2.y, v1.z * v2.z};
 }
 
+vec3 *mulVec3(vec3 *v1, vec3 v2)
+{
+    v1->x *= v2.x;
+    v1->y *= v2.y;
+    v1->z *= v2.z;
+
+    return v1;
+}
+
 vec3 mulVec3(vec3 v, double n)
 {
     return {v.x * n, v.y * n, v.z * n};
+}
+
+vec3 *mulVec3(vec3 *v1, double n)
+{
+    v1->x *= n;
+    v1->y *= n;
+    v1->z *= n;
+
+    return v1;
+}
+
+double dotVec3(vec3 v1, vec3 v2)
+{
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+vec3 crossProdVec3(vec3 v1, vec3 v2)
+{
+    return {v1.y*v2.z-v1.z*v2.y,
+            v1.z*v2.x-v1.x*v2.z, 
+            v1.x*v2.y-v1.y*v2.x};
 }
 
 vec2 projVec(camera cam, vec3 p)
@@ -143,4 +191,15 @@ triangle3 *triangle3Rotate(triangle3 *tri, double pitch, double yaw)
     triangle3RotateX(tri, pitch);
 
     return tri;
+}
+
+vec3 linePlaneCollision(vec3 planeNormal, vec3 planePoint, vec3 v1, vec3 v2)
+{
+    vec3 u = subVec3(v2, v1);
+    double dotp = dotVec3(planeNormal, u);
+    
+    if (std::abs(dotp) < 1e-5)
+        return {0, 0, 0};  // No collision
+
+    return addVec3(v1, mulVec3(u, -dotVec3(planeNormal, subVec3(v1, planePoint)) / dotp));
 }

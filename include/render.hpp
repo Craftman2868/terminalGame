@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <stdint.h>  // uint8_t
 
 #include "maths.hpp"
 
@@ -8,6 +9,8 @@
 #define CHAR_RATIO 2 / 1  // char height / char width
 
 #define MESH_CHAR 'O'
+
+#define PLANE_DIST 0.001
 
 typedef std::vector<triangle3> mesh;
 
@@ -25,6 +28,8 @@ double eq(vec2 p, vec2 a, vec2 b);
 void putScreenTriangle(triangle2 tri, char px);
 void putTriangle2(triangle2 tri, char px);
 void putTriangle3(triangle3 tri, char px);
+
+uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangles);
 
 void putMesh(mesh m);
 
