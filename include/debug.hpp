@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG false
+#define DEBUG true
 
 #if DEBUG
 
@@ -26,7 +26,7 @@ void debug_log_obj(camera cam);
 
 void debug_quit();
 
-#endif  // DEBUG
+#else  // if !DEBUG
 
 #define debug_file NULL
 #define debug_init(...) NULL
@@ -35,3 +35,4 @@ void debug_quit();
 #define debug_obj(...) NULL
 #define debug_quit(...) NULL
 
+#endif  // DEBUG
