@@ -94,6 +94,23 @@ vec3 crossProdVec3(vec3 v1, vec3 v2)
             v1.x*v2.y-v1.y*v2.x};
 }
 
+vec3 normalizeVec3(vec3 vec)
+{
+    double norm = std::sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+    return {vec.x/norm, vec.y/norm, vec.z/norm};
+}
+
+vec3 *normalizeVec3(vec3 *vec)
+{
+    double norm = std::sqrt(vec->x*vec->x + vec->y*vec->y + vec->z*vec->z);
+
+    vec->x /= norm;
+    vec->y /= norm;
+    vec->z /= norm;
+
+    return vec;
+}
+
 vec2 projVec(camera cam, vec3 p)
 {
     return {p.x*cam.fl/p.z, p.y*cam.fl/p.z};
@@ -142,6 +159,11 @@ vec3 vec3RotateY(vec3 v, double yaw)
         v.y,
         -std::sin(yaw)*v.x+std::cos(yaw)*v.z,
     };
+}
+
+vec3 vec3Rotate(vec3 v, double pitch, double yaw)
+{
+    return vec3RotateX(vec3RotateY(v, yaw), pitch);
 }
 
 triangle3 triangle3RotateX(triangle3 tri, double pitch)

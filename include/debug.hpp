@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG true
+#define DEBUG false
 
 #if DEBUG
 
@@ -9,6 +9,7 @@
 #include <typeinfo>
 
 #include "maths.hpp"
+#include "render.hpp"
 
 extern FILE *debug_file;
 
@@ -18,9 +19,11 @@ void debug_init();
 #define debug_log(args...) {_debug_log(args); fflush(debug_file);}
 
 void debug_log_obj(double n);
+void debug_log_obj(int n);
 void debug_log_obj(vec3 vec);
 void debug_log_obj(triangle3 tri);
 void debug_log_obj(camera cam);
+void debug_log_obj(mesh m);
 
 #define debug_obj(obj) {_debug_log("%s = ", #obj); debug_log_obj(obj); debug_log("\n");}
 

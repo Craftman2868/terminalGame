@@ -65,6 +65,9 @@ vec3 *mulVec3(vec3 *v1, double n);
 double dotVec3(vec3 v1, vec3 v2);
 vec3 crossProdVec3(vec3 v1, vec3 v2);
 
+vec3 normalizeVec3(vec3 vec);
+vec3 *normalizeVec3(vec3 *vec);
+
 vec2 projVec(camera cam, vec3 p);
 triangle2 projTriangle(camera cam, triangle3 tri3);
 
@@ -73,6 +76,7 @@ triangle3* triangle3Translate(triangle3 *tri, vec3 vec);
 
 vec3 vec3RotateX(vec3 vec, double pitch);
 vec3 vec3RotateY(vec3 vec, double yaw);
+vec3 vec3Rotate(vec3 vec, double pitch, double yaw);
 
 triangle3 triangle3RotateX(triangle3 tri, double pitch);
 triangle3 *triangle3RotateX(triangle3 *tri, double pitch);

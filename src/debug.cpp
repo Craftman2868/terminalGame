@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "maths.hpp"
+#include "render.hpp"
 
 FILE *debug_file;
 
@@ -22,18 +23,31 @@ void debug_log_obj(double n)
     _debug_log("%f", n);
 }
 
+void debug_log_obj(int n)
+{
+    _debug_log("%d", n);
+}
+
 void debug_log_obj(vec3 vec)
 {
     _debug_log("{%f, %f, %f}", vec.x, vec.y, vec.z);
 }
 
-void debug_log_obj(triangle3 tri)
+void debug_log_obj(triangle3 tri, char *prefix)
 {
     _debug_log("{\n");
+    _debug_log("%s", prefix);
     _debug_log_arg(tri, p1);
+    _debug_log("%s", prefix);
     _debug_log_arg(tri, p2);
+    _debug_log("%s", prefix);
     _debug_log_arg(tri, p3);
-    _debug_log("}");
+    _debug_log("%s}", prefix);
+}
+
+void debug_log_obj(triangle3 tri)
+{
+    debug_log_obj(tri, "");
 }
 
 void debug_log_obj(camera cam)
@@ -43,6 +57,18 @@ void debug_log_obj(camera cam)
     _debug_log_arg(cam, pitch);
     _debug_log_arg(cam, yaw);
     _debug_log_arg(cam, fl);
+    _debug_log("}");
+}
+
+void debug_log_obj(mesh m)
+{
+    _debug_log("{\n");
+    for (triangle3 tri : m)
+    {
+        _debug_log("  ");
+        debug_log_obj(tri, "  ");
+        _debug_log(",\n");
+    }
     _debug_log("}");
 }
 

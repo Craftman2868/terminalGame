@@ -6,6 +6,7 @@
 #include "maths.hpp"
 #include "render.hpp"
 #include "input.hpp"
+#include "model.hpp"
 
 #define SPEED 0.03
 
@@ -16,31 +17,46 @@ int main(int argc, char *argv[])
     Key key;
     bool updated;
     mesh m;
+    lightSource light = {{-1, 2, 0}};
 
     debug_init();
+
+    m = loadModel("sphere.obj");
+
+    moveMesh(&m, {0, 0, 8});
+
+    if (m.size() == 0)
+    {
+        debug_quit();
+        return 1;
+    }
+
+    debug_obj(m);
 
     input_init();
     camera *cam = init();
 
-    // Cude:  // TODO
+    cam->pos = {0, 1, -3};
 
-    m.push_back({{0, 1, 1}, {1, 1, 1}, {0, 1, 2}}); // Top
-    m.push_back({{1, 1, 2}, {0, 1, 2}, {1, 1, 1}}); // Top
+    // Cude:
 
-    m.push_back({{0, 1, 1}, {0, 0, 1}, {1, 1, 1}}); // Front
-    m.push_back({{1, 0, 1}, {1, 1, 1}, {0, 0, 1}}); // Front
+    // m.push_back({{0, 1, 1}, {1, 1, 1}, {0, 1, 2}}); // Top
+    // m.push_back({{1, 1, 2}, {0, 1, 2}, {1, 1, 1}}); // Top
 
-    m.push_back({{1, 0, 2}, {1, 1, 1}, {1, 0, 1}}); // Right
-    m.push_back({{1, 1, 2}, {1, 1, 1}, {1, 0, 2}}); // Right
+    // m.push_back({{0, 1, 1}, {0, 0, 1}, {1, 1, 1}}); // Front
+    // m.push_back({{1, 0, 1}, {1, 1, 1}, {0, 0, 1}}); // Front
 
-    m.push_back({{0, 0, 1}, {0, 0, 2}, {1, 0, 1}}); // Bottom
-    m.push_back({{1, 0, 2}, {1, 0, 1}, {0, 0, 2}}); // Bottom
+    // m.push_back({{1, 0, 2}, {1, 1, 1}, {1, 0, 1}}); // Right
+    // m.push_back({{1, 1, 2}, {1, 1, 1}, {1, 0, 2}}); // Right
 
-    m.push_back({{0, 1, 2}, {1, 1, 2}, {0, 0, 2}}); // Back
-    m.push_back({{1, 0, 2}, {0, 0, 2}, {1, 1, 2}}); // Back
+    // m.push_back({{0, 0, 1}, {0, 0, 2}, {1, 0, 1}}); // Bottom
+    // m.push_back({{1, 0, 2}, {1, 0, 1}, {0, 0, 2}}); // Bottom
 
-    m.push_back({{0, 0, 2}, {0, 0, 1}, {0, 1, 1}}); // Left
-    m.push_back({{0, 1, 2}, {0, 0, 2}, {0, 1, 1}}); // Left
+    // m.push_back({{0, 1, 2}, {1, 1, 2}, {0, 0, 2}}); // Back
+    // m.push_back({{1, 0, 2}, {0, 0, 2}, {1, 1, 2}}); // Back
+
+    // m.push_back({{0, 0, 2}, {0, 0, 1}, {0, 1, 1}}); // Left
+    // m.push_back({{0, 1, 2}, {0, 0, 2}, {0, 1, 1}}); // Left
     
     // // Square
 
@@ -55,7 +71,8 @@ int main(int argc, char *argv[])
         debug_log("-------------------------\n");
         clear();
 
-        putMesh(m);
+        putMesh(m, light);
+        putPoint(light.pos, 'L');
 
         draw();
 
