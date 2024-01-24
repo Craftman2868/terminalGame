@@ -94,9 +94,14 @@ vec3 crossProdVec3(vec3 v1, vec3 v2)
             v1.x*v2.y-v1.y*v2.x};
 }
 
+double lengthVec3(vec3 vec)
+{
+    return std::sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
+
 vec3 normalizeVec3(vec3 vec)
 {
-    double norm = std::sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+    double norm = lengthVec3(vec);
     return {vec.x/norm, vec.y/norm, vec.z/norm};
 }
 

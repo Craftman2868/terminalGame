@@ -1,6 +1,7 @@
 #include <stdio.h>  // printf
 #include <sys/ioctl.h>  // ioctl TIOCGWINSZ, winsize (get terminal width and height)
 #include <stdint.h>  // uint8_t
+#include <algorithm>
 
 #include "debug.hpp"
 #include "render.hpp"
@@ -95,7 +96,7 @@ char diffuseLight(lightSource light, vec3 normal, vec3 vec)
 {
     double intensity = dotVec3(normalizeVec3(subVec3(light.pos, vec)), normalizeVec3(normal));  // -1 < intensity < 1
 
-    debug_log("Intensity: %f\n", intensity);
+    // debug_log("Intensity: %f\n", intensity);
 
     if (intensity <= 0)
         return LIGHT_GRADIENT[0];
@@ -106,7 +107,7 @@ char diffuseLight(lightSource light, vec3 normal, vec3 vec)
 uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangles)
 {
     bool p1in, p2in, p3in;
-    // bool inverted;
+    bool inverted;
     vec3 collision;
     vec3 zNear = addVec3(cam.pos, mulVec3(planeNormal, PLANE_DIST));
 
@@ -114,9 +115,7 @@ uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangl
     p2in = dotVec3(subVec3(zNear, tri.p2), planeNormal) < 0;
     p3in = dotVec3(subVec3(zNear, tri.p3), planeNormal) < 0;
 
-    // inverted = p1in && p3in;
-
-    // inverted = false;
+    inverted = p1in && p3in;
 
     if (!p1in && !p2in && !p3in)  // No point in
     {
@@ -129,54 +128,68 @@ uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangl
     }
     else if (p1in ^ p2in ^ p3in)  // 1 point in
     {
-        // if (inverted)
-        //     clippedTriangles[0] = {
-        //         linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
-        //         (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3)),
-        //         linePlaneCollision(planeNormal, zNear, (!p3in ? tri.p3 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
-        //     };
-        // else
-        clippedTriangles[0] = {
-            linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
-            linePlaneCollision(planeNormal, zNear, (!p3in ? tri.p3 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
-            (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3)),
-        };
+        if (inverted)
+            clippedTriangles[0] = {
+                linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
+                (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3)),
+                linePlaneCollision(planeNormal, zNear, (!p3in ? tri.p3 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
+            };
+        else
+            clippedTriangles[0] = {
+                linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
+                linePlaneCollision(planeNormal, zNear, (!p3in ? tri.p3 : tri.p2), (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3))),
+                (p1in ? tri.p1 : (p2in ? tri.p2 : tri.p3)),
+            };
 
         return 1;
     }
     else  // 2 points in
     {
-        // if (inverted)
-        // {
-        //     collision = linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p1in ? tri.p1 : tri.p2));
-        //     clippedTriangles[0] = {
-        //         linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p3in ? tri.p3 : tri.p2)),
-        //         (p3in ? tri.p3 : tri.p2),
-        //         collision,
-        //     };
-        //     clippedTriangles[1] = {
-        //         collision,
-        //         (p3in ? tri.p3 : tri.p2),
-        //         (p1in ? tri.p1 : tri.p2),
-        //     };
-        // }
-        // else
-        // {
-        collision = linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p3in ? tri.p3 : tri.p2));
-        clippedTriangles[0] = {
-            linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p1in ? tri.p1 : tri.p2)),
-            (p1in ? tri.p1 : tri.p2),
-            collision,
-        };
-        clippedTriangles[1] = {
-            collision,
-            (p1in ? tri.p1 : tri.p2),
-            (p3in ? tri.p3 : tri.p2),
-        };
-        // }
+        if (inverted)
+        {
+            collision = linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p1in ? tri.p1 : tri.p2));
+            clippedTriangles[0] = {
+                linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p3in ? tri.p3 : tri.p2)),
+                (p3in ? tri.p3 : tri.p2),
+                collision,
+            };
+            clippedTriangles[1] = {
+                collision,
+                (p3in ? tri.p3 : tri.p2),
+                (p1in ? tri.p1 : tri.p2),
+            };
+        }
+        else
+        {
+            collision = linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p3in ? tri.p3 : tri.p2));
+            clippedTriangles[0] = {
+                linePlaneCollision(planeNormal, zNear, (!p1in ? tri.p1 : (!p2in ? tri.p2 : tri.p3)), (p1in ? tri.p1 : tri.p2)),
+                (p1in ? tri.p1 : tri.p2),
+                collision,
+            };
+            clippedTriangles[1] = {
+                collision,
+                (p1in ? tri.p1 : tri.p2),
+                (p3in ? tri.p3 : tri.p2),
+            };
+        }
 
         return 2;
     }
+}
+
+double triangleDist(triangle3 tri)
+{
+    vec3 pos = mulVec3(addVec3(tri.p1, addVec3(tri.p2, tri.p3)), (double) 1/3);
+
+    subVec3(&pos, cam.pos);
+
+    return lengthVec3(pos);
+}
+
+bool compTriangleDist(triangle3 tri1, triangle3 tri2)
+{
+    return triangleDist(tri1) > triangleDist(tri2);
 }
 
 bool isVisible(triangle3 tri)
@@ -200,6 +213,8 @@ void putMesh(mesh m, lightSource light)
     // debug_obj(-std::sin((cam).yaw) * std::cos((cam).pitch));
     // debug_obj( std::sin((cam).pitch));
     // debug_obj( std::cos((cam).yaw) * std::cos((cam).pitch));
+
+    std::sort(m.begin(), m.end(), compTriangleDist);
 
     for (triangle3 tri : m)
     {

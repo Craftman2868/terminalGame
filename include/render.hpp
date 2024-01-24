@@ -43,6 +43,8 @@ char diffuseLight(lightSource light, vec3 normal, vec3 vec);
 
 uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangles);
 
+double triangleDist(triangle3 tri);  // The distance between the triangle and the camera
+
 void putMesh(mesh m, lightSource light);
 
 void moveTriangle(triangle3 *tri, vec3 v);

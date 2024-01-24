@@ -65,6 +65,8 @@ vec3 *mulVec3(vec3 *v1, double n);
 double dotVec3(vec3 v1, vec3 v2);
 vec3 crossProdVec3(vec3 v1, vec3 v2);
 
+double lengthVec3(vec3 vec);
+
 vec3 normalizeVec3(vec3 vec);
 vec3 *normalizeVec3(vec3 *vec);
 
