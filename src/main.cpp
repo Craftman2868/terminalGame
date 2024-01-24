@@ -8,12 +8,20 @@
 #include "input.hpp"
 #include "model.hpp"
 
-#define SPEED 0.03
+#define DEFAULT_SPEED 0.03
 
 bool running = false;
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        printf("Usage: %s file.obj", argv[0]);
+
+        return 1;
+    }
+
+    float speed = DEFAULT_SPEED;
     Key key;
     bool updated;
     mesh m;
@@ -21,9 +29,9 @@ int main(int argc, char *argv[])
 
     debug_init();
 
-    m = loadModel("sphere.obj");
+    m = loadModel(argv[1]);
 
-    moveMesh(&m, {0, 0, 8});
+    // moveMesh(&m, {0, 0, 8});
 
     if (m.size() == 0)
     {
@@ -38,31 +46,6 @@ int main(int argc, char *argv[])
 
     cam->pos = {0, 1, -3};
 
-    // Cude:
-
-    m.push_back({{0, 1, 1}, {0, 1, 2}, {1, 1, 1}}); // Top
-    m.push_back({{1, 1, 2}, {1, 1, 1}, {0, 1, 2}}); // Top
-
-    m.push_back({{0, 1, 1}, {1, 1, 1}, {0, 0, 1}}); // Front
-    m.push_back({{1, 0, 1}, {0, 0, 1}, {1, 1, 1}}); // Front
-
-    m.push_back({{1, 0, 2}, {1, 0, 1}, {1, 1, 1}}); // Right
-    m.push_back({{1, 1, 2}, {1, 0, 2}, {1, 1, 1}}); // Right
-
-    m.push_back({{0, 0, 1}, {1, 0, 1}, {0, 0, 2}}); // Bottom
-    m.push_back({{1, 0, 2}, {0, 0, 2}, {1, 0, 1}}); // Bottom
-
-    m.push_back({{0, 1, 2}, {0, 0, 2}, {1, 1, 2}}); // Back
-    m.push_back({{1, 0, 2}, {1, 1, 2}, {0, 0, 2}}); // Back
-
-    m.push_back({{0, 0, 2}, {0, 1, 1}, {0, 0, 1}}); // Left
-    m.push_back({{0, 1, 2}, {0, 1, 1}, {0, 0, 2}}); // Left
-
-    // // Square
-
-    // m.push_back({{0, 1, 2}, {0, 0, 2}, {1, 1, 2}});
-    // m.push_back({{1, 0, 2}, {1, 1, 2}, {0, 0, 2}});
-
     debug_log("Running...\n");
 
     running = true;
@@ -72,7 +55,7 @@ int main(int argc, char *argv[])
         clear();
 
         putMesh(m, light);
-        putPoint(light.pos, 'L');
+        // putPoint(light.pos, 'L');
 
         draw();
 
@@ -94,20 +77,20 @@ int main(int argc, char *argv[])
                 {
                 case KEY_DOWN:
                     if (cam->pitch > -1.57)
-                        cam->pitch -= SPEED;
+                        cam->pitch -= speed;
                     updated = true;
                     break;
                 case KEY_UP:
                     if (cam->pitch < 1.57)
-                        cam->pitch += SPEED;
+                        cam->pitch += speed;
                     updated = true;
                     break;
                 case KEY_LEFT:
-                    cam->yaw += SPEED;
+                    cam->yaw += speed;
                     updated = true;
                     break;
                 case KEY_RIGHT:
-                    cam->yaw -= SPEED;
+                    cam->yaw -= speed;
                     updated = true;
                     break;
                 default:
@@ -115,34 +98,60 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'Z':
-                addVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
+                addVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), speed));
                 updated = true;
                 break;
             case 'S':
-                subVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), SPEED));
+                subVec3(&cam->pos, mulVec3(CAM_FORWARD_DIRECTION(*cam), speed));
                 updated = true;
                 break;
             case 'Q':
-                subVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
+                subVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), speed));
                 updated = true;
                 break;
             case 'D':
-                addVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), SPEED));
+                addVec3(&cam->pos, mulVec3(CAM_RIGHT_DIRECTION(*cam), speed));
                 updated = true;
                 break;
             case 'E':
             case ' ':
-                cam->pos.y += SPEED;
+                cam->pos.y += speed;
                 updated = true;
                 break;
             case 'A':
-                cam->pos.y -= SPEED;
+                cam->pos.y -= speed;
                 updated = true;
                 break;
             case '0':
                 cam->pos = {0, 0, 0};
                 cam->pitch = 0;
                 cam->yaw = 0;
+                speed = DEFAULT_SPEED;
+                updated = true;
+                break;
+            case '+':
+                if (speed < 0.001)
+                    speed = 0.005;
+                else if (speed > 10)
+                    break;
+                speed *= 2;
+                break;
+            case '-':
+                speed /= 2;
+                break;
+            case '*':
+                speed = DEFAULT_SPEED;
+                break;
+            case 'F':
+                cam->fl += 0.1;
+                updated = true;
+                break;
+            case 'G':
+                cam->fl -= 0.1;
+                updated = true;
+                break;
+            case 'H':
+                cam->fl = DEFAULT_FOCAL_LENGTH;
                 updated = true;
                 break;
             default:

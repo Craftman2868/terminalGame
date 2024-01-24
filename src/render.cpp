@@ -24,7 +24,7 @@ triangle2 triangleToScreen(triangle2 tri)
 void draw()
 {
     printf("\033[H%s\n", pixels);
-    printf("%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw);
+    printf("%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f / %4.1f", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw, cam.fl);
     fflush(stdout);
 }
 
@@ -95,8 +95,6 @@ void putPoint(vec3 p, char px)
 char diffuseLight(lightSource light, vec3 normal, vec3 vec)
 {
     double intensity = dotVec3(normalizeVec3(subVec3(light.pos, vec)), normalizeVec3(normal));  // -1 < intensity < 1
-
-    // debug_log("Intensity: %f\n", intensity);
 
     if (intensity <= 0)
         return LIGHT_GRADIENT[0];
@@ -206,13 +204,7 @@ void putMesh(mesh m, lightSource light)
 {
     triangle3 clippedTriangles[2];
     uint8_t triN = 0;
-    char ch = MESH_CHAR;
-
-    // debug_log("src/render.cpp:putMesh\n");
-    // debug_obj(light.pos);
-    // debug_obj(-std::sin((cam).yaw) * std::cos((cam).pitch));
-    // debug_obj( std::sin((cam).pitch));
-    // debug_obj( std::cos((cam).yaw) * std::cos((cam).pitch));
+    char ch;
 
     std::sort(m.begin(), m.end(), compTriangleDist);
 
@@ -223,9 +215,28 @@ void putMesh(mesh m, lightSource light)
         for (uint8_t i = 0; i < triN; i++)
             if (isVisible(clippedTriangles[i]))
             {
-                // debug_obj(clippedTriangles[i]);
                 ch = diffuseLight(light, crossProdVec3(subVec3(clippedTriangles[i].p2, clippedTriangles[i].p1), subVec3(clippedTriangles[i].p3, clippedTriangles[i].p1)), clippedTriangles[i].p1);
                 putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), ch);
+            }
+    }
+}
+
+void putMesh(mesh m)
+{
+    
+    triangle3 clippedTriangles[2];
+    uint8_t triN = 0;
+
+    std::sort(m.begin(), m.end(), compTriangleDist);
+
+    for (triangle3 tri : m)
+    {
+        triN = clipTriangle3(tri, CAM_LOOK_AT_DIRECTION(cam), clippedTriangles);
+
+        for (uint8_t i = 0; i < triN; i++)
+            if (isVisible(clippedTriangles[i]))
+            {
+                putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), LIGHT_GRADIENT[0]);
             }
     }
 }
@@ -253,7 +264,7 @@ camera *init()
     w = ws.ws_col;
     h = ws.ws_row - 1;
 
-    cam = {{0, 0, 0}, 0, 0, 2};
+    cam = {{0, 0, 0}, 0, 0, DEFAULT_FOCAL_LENGTH};
 
     pixels = new char[w * h + 1];
     pixels[w * h] = 0;

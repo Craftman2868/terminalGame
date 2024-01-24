@@ -8,7 +8,7 @@
 #define STDOUT 1
 #define CHAR_RATIO 2 / 1  // char height / char width
 
-#define MESH_CHAR 'O'
+#define DEFAULT_FOCAL_LENGTH 2
 
 #define PLANE_DIST 0.001
 
@@ -45,6 +45,7 @@ uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangl
 
 double triangleDist(triangle3 tri);  // The distance between the triangle and the camera
 
+void putMesh(mesh m);
 void putMesh(mesh m, lightSource light);
 
 void moveTriangle(triangle3 *tri, vec3 v);
