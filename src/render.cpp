@@ -1,13 +1,15 @@
+#include "render.hpp"
+
 #include <stdio.h>  // printf
 #include <sys/ioctl.h>  // ioctl TIOCGWINSZ, winsize (get terminal width and height)
 #include <stdint.h>  // uint8_t
 #include <algorithm>
 
 #include "debug.hpp"
-#include "render.hpp"
+#include "model.hpp"
 
 int w = 20, h = 20;
-char *pixels;
+unsigned char *pixels;
 camera cam;
 
 
@@ -23,12 +25,21 @@ triangle2 triangleToScreen(triangle2 tri)
 
 void draw()
 {
-    printf("\033[H%s\n", pixels);
-    printf("%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f / %4.1f", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw, cam.fl);
+    printf("\033[H");
+
+    for (int i = 0; i < h; i++)
+    {
+        for (int j = 0; j < w; j++)
+        {
+            putchar(LIGHT_GRADIENT[pixels[i * w + j] * (LIGHT_GRADIENT_LENGH-1) / 255]);
+        }
+    }
+
+    printf("\n%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f / %4.1f", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw, cam.fl);
     fflush(stdout);
 }
 
-void fill(char px)
+void fill(unsigned char px)
 {
     for (int i = 0; i < w*h; i++)
         pixels[i] = px;
@@ -36,16 +47,27 @@ void fill(char px)
 
 void clear()
 {
-    fill(' ');
+    fill(0);
 }
 
-void putPixel(unsigned int x, unsigned int y, char px)
+void putPixel(unsigned int x, unsigned int y, unsigned char px, unsigned char opacity)
+{
+    if (x >= 0 && x < w && y >= 0 && y < h)
+        pixels[y*w+x] = opacity * px / (255 - MIN_LIGHT) + MIN_LIGHT * 3 + pixels[y*w+x] * (255 - opacity) / (255 - MIN_LIGHT);
+}
+
+void putPixel(unsigned int x, unsigned int y, unsigned char px)
 {
     if (x >= 0 && x < w && y >= 0 && y < h)
         pixels[y*w+x] = px;
 }
 
-void putPixel(vec2 pos, char px)
+void putPixel(vec2 pos, unsigned char px, unsigned char opacity)
+{
+    putPixel(toInt(pos.x), toInt(pos.y), px, opacity);
+}
+
+void putPixel(vec2 pos, unsigned char px)
 {
     putPixel(toInt(pos.x), toInt(pos.y), px);
 }
@@ -55,7 +77,7 @@ double eq(vec2 p, vec2 a, vec2 b)
     return (a.x-p.x)*(b.y-p.y)-(a.y-p.y)*(b.x-p.x);
 }
 
-void putScreenTriangle(triangle2 tri, char px)
+void putScreenTriangle(triangle2 tri, unsigned char px, unsigned char opacity)
 {
     int xmin = toInt(std::min(std::min(tri.p1.x, tri.p2.x), tri.p3.x));
     int xmax = toInt(std::max(std::max(tri.p1.x, tri.p2.x), tri.p3.x));
@@ -73,23 +95,43 @@ void putScreenTriangle(triangle2 tri, char px)
                     double w3 = eq(pos, tri.p2, tri.p3);
 
                     if ((w1 >= 0 && w2 >= 0 && w3 >= 0) || (-w1 >= 0 && -w2 >= 0 && -w3 >= 0))
-                        putPixel(pos, px);
+                        putPixel(pos, px, opacity);
                 }
 }
 
-void putTriangle2(triangle2 tri, char px)
+void putScreenTriangle(triangle2 tri, unsigned char px)
+{
+    putScreenTriangle(tri, px, 255);
+}
+
+void putTriangle2(triangle2 tri, unsigned char px, unsigned char opacity)
+{
+    return putScreenTriangle(triangleToScreen(tri), px, opacity);
+}
+
+void putTriangle2(triangle2 tri, unsigned char px)
 {
     return putScreenTriangle(triangleToScreen(tri), px);
 }
 
-void putTriangle3(triangle3 tri, char px)
+void putTriangle3(triangle3 tri, unsigned char px, unsigned char opacity)
+{
+    return putTriangle2(projTriangle(cam, tri), px, opacity);
+}
+
+void putTriangle3(triangle3 tri, unsigned char px)
 {
     return putTriangle2(projTriangle(cam, tri), px);
 }
 
-void putPoint(vec3 p, char px)
+void putPoint(vec3 p, unsigned char px, unsigned char opacity)
 {
-    return putPixel(vecToScreen(projVec(cam, vec3Rotate(subVec3(p, cam.pos), cam.pitch, cam.yaw))), px);
+    return putPixel(vecToScreen(projVec(cam, vec3Rotate(subVec3(p, cam.pos), cam.pitch, cam.yaw))), px, opacity);
+}
+
+void putPoint(vec3 p, unsigned char px)
+{
+    return putPoint(p, px, 255);
 }
 
 char diffuseLight(lightSource light, vec3 normal, vec3 vec)
@@ -97,9 +139,9 @@ char diffuseLight(lightSource light, vec3 normal, vec3 vec)
     double intensity = dotVec3(normalizeVec3(subVec3(light.pos, vec)), normalizeVec3(normal));  // -1 < intensity < 1
 
     if (intensity <= 0)
-        return LIGHT_GRADIENT[0];
+        return 0;
 
-    return LIGHT_GRADIENT[(int) std::round(intensity*(LIGHT_GRADIENT_LENGH-1))];
+    return intensity * 255;
 }
 
 uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangles)
@@ -185,9 +227,9 @@ double triangleDist(triangle3 tri)
     return lengthVec3(pos);
 }
 
-bool compTriangleDist(triangle3 tri1, triangle3 tri2)
+bool compTriangleDist(renderTriangle tri1, renderTriangle tri2)
 {
-    return triangleDist(tri1) > triangleDist(tri2);
+    return triangleDist(tri1.tri) > triangleDist(tri2.tri);
 }
 
 bool isVisible(triangle3 tri)
@@ -208,15 +250,15 @@ void putMesh(mesh m, lightSource light)
 
     std::sort(m.begin(), m.end(), compTriangleDist);
 
-    for (triangle3 tri : m)
+    for (renderTriangle rt : m)
     {
-        triN = clipTriangle3(tri, CAM_LOOK_AT_DIRECTION(cam), clippedTriangles);
+        triN = clipTriangle3(rt.tri, CAM_LOOK_AT_DIRECTION(cam), clippedTriangles);
 
         for (uint8_t i = 0; i < triN; i++)
             if (isVisible(clippedTriangles[i]))
             {
                 ch = diffuseLight(light, crossProdVec3(subVec3(clippedTriangles[i].p2, clippedTriangles[i].p1), subVec3(clippedTriangles[i].p3, clippedTriangles[i].p1)), clippedTriangles[i].p1);
-                putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), ch);
+                putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), ch, rt.opacity);
             }
     }
 }
@@ -229,14 +271,14 @@ void putMesh(mesh m)
 
     std::sort(m.begin(), m.end(), compTriangleDist);
 
-    for (triangle3 tri : m)
+    for (renderTriangle rt : m)
     {
-        triN = clipTriangle3(tri, CAM_LOOK_AT_DIRECTION(cam), clippedTriangles);
+        triN = clipTriangle3(rt.tri, CAM_LOOK_AT_DIRECTION(cam), clippedTriangles);
 
         for (uint8_t i = 0; i < triN; i++)
             if (isVisible(clippedTriangles[i]))
             {
-                putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), LIGHT_GRADIENT[0]);
+                putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), MIN_LIGHT, rt.opacity);
             }
     }
 }
@@ -252,7 +294,7 @@ void moveMesh(mesh *m, vec3 v)
 {
     for (int i = 0; i < m->size(); i++)
     {
-        moveTriangle(&(*m)[i], v);
+        moveTriangle(&(*m)[i].tri, v);
     }
 }
 
@@ -266,7 +308,7 @@ camera *init()
 
     cam = {{0, 0, 0}, 0, 0, DEFAULT_FOCAL_LENGTH};
 
-    pixels = new char[w * h + 1];
+    pixels = new unsigned char[w * h + 1];
     pixels[w * h] = 0;
     clear();
 

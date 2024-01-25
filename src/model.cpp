@@ -1,8 +1,10 @@
 #include "model.hpp"
 
-#include "stdio.h"
+#include <stdio.h>
 #include <vector>
 #include <stdexcept>
+
+#include "maths.hpp"
 
 mesh loadModel(char *path)
 {
@@ -55,11 +57,11 @@ mesh loadModel(char *path)
                     throw std::runtime_error("Invalid face definition in " + std::string(path) + ": Vertex " + std::to_string(i) + " not found");
             }
 
-            m.push_back({vertex[vertexIds[0]-1], vertex[vertexIds[1]-1], vertex[vertexIds[2]-1]});
+            m.push_back({{vertex[vertexIds[0]-1], vertex[vertexIds[1]-1], vertex[vertexIds[2]-1]}, DEFAULT_OPACITY});
 
             if (vertexIds[3] != -1)
             {
-                m.push_back({vertex[vertexIds[2]-1], vertex[vertexIds[3]-1], vertex[vertexIds[0]-1]});
+                m.push_back({{vertex[vertexIds[2]-1], vertex[vertexIds[3]-1], vertex[vertexIds[0]-1]}, DEFAULT_OPACITY});
             }
         }
 

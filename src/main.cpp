@@ -9,6 +9,7 @@
 #include "model.hpp"
 
 #define DEFAULT_SPEED 0.03
+#define DIRECTION_SPEED 0.02
 
 bool running = false;
 
@@ -77,20 +78,20 @@ int main(int argc, char *argv[])
                 {
                 case KEY_DOWN:
                     if (cam->pitch > -1.57)
-                        cam->pitch -= speed;
+                        cam->pitch -= DIRECTION_SPEED;
                     updated = true;
                     break;
                 case KEY_UP:
                     if (cam->pitch < 1.57)
-                        cam->pitch += speed;
+                        cam->pitch += DIRECTION_SPEED;
                     updated = true;
                     break;
                 case KEY_LEFT:
-                    cam->yaw += speed;
+                    cam->yaw += DIRECTION_SPEED;
                     updated = true;
                     break;
                 case KEY_RIGHT:
-                    cam->yaw -= speed;
+                    cam->yaw -= DIRECTION_SPEED;
                     updated = true;
                     break;
                 default:
