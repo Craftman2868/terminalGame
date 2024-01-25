@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        printf("Usage: %s file.obj", argv[0]);
+        printf("Usage: %s file.obj\n", argv[0]);
 
         return 1;
     }
