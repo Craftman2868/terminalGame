@@ -49,7 +49,7 @@ void Renderer::render()
         throw std::runtime_error("Renderer not initialized");
 
     clear_buffer();
-    putMesh(triangles);
+    putMesh(triangles, light);
     draw();
 }
 
