@@ -10,13 +10,13 @@
 
 using namespace std::chrono;
 
-milliseconds time_ms() {
+milliseconds time_ms()
+{
     return duration_cast<milliseconds>(
-        system_clock::now().time_since_epoch()
-    );
+        system_clock::now().time_since_epoch());
 }
 
-Game::Game() : pl(this), renderer((lightSource) {{0, 0, 0}})
+Game::Game() : pl(this), renderer((lightSource){{0, 0, 0}})
 {
     cam = renderer.cam;
     running = false;
@@ -30,7 +30,7 @@ void Game::tick()
 {
     if (time_ms() - last_tick < MS_PER_TICK)
     {
-        std::this_thread::sleep_for(time_ms() - last_tick);
+        std::this_thread::sleep_for(MS_PER_TICK - (time_ms() - last_tick));
     }
 
     last_tick = time_ms();
@@ -129,9 +129,9 @@ bool Game::update()
 
     if (running)
         world.update();
-    
+
     tick();
-    
+
     return running;
 }
 
@@ -150,6 +150,8 @@ void Game::render()
 void Game::run()
 {
     renderer.init();
+
+    last_tick = time_ms();
 
     cam = renderer.cam;
 

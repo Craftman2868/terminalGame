@@ -11,10 +11,6 @@
 #include "game.hpp"
 #include "world/entity.hpp"
 
-#define DEFAULT_SPEED 0.03
-#define DIRECTION_SPEED 0.02
-
-
 bool running = false;
 
 int main(int argc, char *argv[])

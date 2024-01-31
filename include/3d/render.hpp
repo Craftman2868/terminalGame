@@ -3,17 +3,13 @@
 #include <vector>
 #include <stdint.h>  // uint8_t
 
+#include "config.hpp"
+
 #include "3d/maths.hpp"
 #include "3d/model.hpp"
 
 #define STDOUT 1
-#define CHAR_RATIO 2 / 1  // char height / char width
 
-#define DEFAULT_FOCAL_LENGTH 2
-
-#define PLANE_DIST 0.001
-
-#define LIGHT_GRADIENT " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
 #define LIGHT_GRADIENT_LENGH (sizeof (LIGHT_GRADIENT) - 1)
 #define MIN_LIGHT (255 / LIGHT_GRADIENT_LENGH + 255 % LIGHT_GRADIENT_LENGH ? 1 : 0)
 

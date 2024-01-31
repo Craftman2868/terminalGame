@@ -1,15 +1,16 @@
 #pragma once
 
+#include "config.hpp"
+
 #include "renderer.hpp"
 #include "world/player.hpp"
 #include "world/world.hpp"
 
 #include <chrono>
 
-using namespace std::chrono;
+#define MS_PER_TICK ((milliseconds)(1000 / MAX_TPS))
 
-#define MAX_TPS 5
-#define MS_PER_TICK ((milliseconds) (1000 / MAX_TPS))
+using namespace std::chrono;
 
 class Game
 {

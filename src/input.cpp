@@ -161,7 +161,7 @@ bool getkey_noblock(Key *res)
         getkey(res);
         return true;
     }
-    
+
     res->key = KEY_NULL;
     res->ch = 0;
 
