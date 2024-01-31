@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-#include "maths.hpp"
-#include "render.hpp"
+#include "3d/maths.hpp"
+#include "3d/render.hpp"
 
 FILE *debug_file;
 
@@ -50,6 +50,25 @@ void debug_log_obj(triangle3 tri)
     debug_log_obj(tri, "");
 }
 
+void debug_log_obj(renderTriangle rt, char *prefix)
+{
+    _debug_log("{\n");
+    _debug_log("%s", prefix);
+    _debug_log_arg(rt.tri, p1);
+    _debug_log("%s", prefix);
+    _debug_log_arg(rt.tri, p2);
+    _debug_log("%s", prefix);
+    _debug_log_arg(rt.tri, p3);
+    _debug_log("%s", prefix);
+    _debug_log_arg(rt, opacity);
+    _debug_log("%s}", prefix);
+}
+
+void debug_log_obj(renderTriangle rt)
+{
+    debug_log_obj(rt, "");
+}
+
 void debug_log_obj(camera cam)
 {
     _debug_log("{\n");
@@ -63,10 +82,10 @@ void debug_log_obj(camera cam)
 void debug_log_obj(mesh m)
 {
     _debug_log("{\n");
-    for (triangle3 tri : m)
+    for (renderTriangle rt : m)
     {
         _debug_log("  ");
-        debug_log_obj(tri, "  ");
+        debug_log_obj(rt, "  ");
         _debug_log(",\n");
     }
     _debug_log("}");

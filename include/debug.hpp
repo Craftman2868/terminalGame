@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <typeinfo>
 
-#include "maths.hpp"
-#include "render.hpp"
+#include "3d/maths.hpp"
+#include "3d/render.hpp"
 
 extern FILE *debug_file;
 

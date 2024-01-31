@@ -3,8 +3,8 @@
 #include <vector>
 #include <stdint.h>  // uint8_t
 
-#include "maths.hpp"
-#include "model.hpp"
+#include "3d/maths.hpp"
+#include "3d/model.hpp"
 
 #define STDOUT 1
 #define CHAR_RATIO 2 / 1  // char height / char width
@@ -15,7 +15,7 @@
 
 #define LIGHT_GRADIENT " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@"
 #define LIGHT_GRADIENT_LENGH (sizeof (LIGHT_GRADIENT) - 1)
-#define MIN_LIGHT (255 / LIGHT_GRADIENT_LENGH + 1)
+#define MIN_LIGHT (255 / LIGHT_GRADIENT_LENGH + 255 % LIGHT_GRADIENT_LENGH ? 1 : 0)
 
 typedef struct {
     vec3 pos;
@@ -26,7 +26,7 @@ triangle2 triangleToScreen(triangle2 tri);
 
 void draw();
 void fill(unsigned char px);
-void clear();
+void clear_buffer();
 
 void putPixel(unsigned int x, unsigned int y, unsigned char px, unsigned char opacity);
 void putPixel(unsigned int x, unsigned int y, unsigned char px);
@@ -53,8 +53,5 @@ double triangleDist(triangle3 tri);  // The distance between the triangle and th
 void putMesh(mesh m);
 void putMesh(mesh m, lightSource light);
 
-void moveTriangle(triangle3 *tri, vec3 v);
-void moveMesh(mesh *m, vec3 v);
-
-camera *init();
-void quit();
+camera *render_init();
+void render_quit();

@@ -1,4 +1,4 @@
-#include "render.hpp"
+#include "3d/render.hpp"
 
 #include <stdio.h>  // printf
 #include <sys/ioctl.h>  // ioctl TIOCGWINSZ, winsize (get terminal width and height)
@@ -6,9 +6,9 @@
 #include <algorithm>
 
 #include "debug.hpp"
-#include "model.hpp"
+#include "3d/model.hpp"
 
-int w = 20, h = 20;
+unsigned int w = 20, h = 20;
 unsigned char *pixels;
 camera cam;
 
@@ -41,24 +41,24 @@ void draw()
 
 void fill(unsigned char px)
 {
-    for (int i = 0; i < w*h; i++)
+    for (unsigned int i = 0; i < w*h; i++)
         pixels[i] = px;
 }
 
-void clear()
+void clear_buffer()
 {
     fill(0);
 }
 
 void putPixel(unsigned int x, unsigned int y, unsigned char px, unsigned char opacity)
 {
-    if (x >= 0 && x < w && y >= 0 && y < h)
+    if (x < w && y < h)  // always >= 0 because unsigned
         pixels[y*w+x] = opacity * px / (255 - MIN_LIGHT) + MIN_LIGHT * 3 + pixels[y*w+x] * (255 - opacity) / (255 - MIN_LIGHT);
 }
 
 void putPixel(unsigned int x, unsigned int y, unsigned char px)
 {
-    if (x >= 0 && x < w && y >= 0 && y < h)
+    if (x < w && y < h)  // always >= 0 because unsigned
         pixels[y*w+x] = px;
 }
 
@@ -283,22 +283,7 @@ void putMesh(mesh m)
     }
 }
 
-void moveTriangle(triangle3 *tri, vec3 v)
-{
-    tri->p1 = addVec3(tri->p1, v);
-    tri->p2 = addVec3(tri->p2, v);
-    tri->p3 = addVec3(tri->p3, v);
-}
-
-void moveMesh(mesh *m, vec3 v)
-{
-    for (int i = 0; i < m->size(); i++)
-    {
-        moveTriangle(&(*m)[i].tri, v);
-    }
-}
-
-camera *init()
+camera *render_init()
 {
     struct winsize ws;
     ioctl(0, TIOCGWINSZ, &ws);
@@ -310,7 +295,7 @@ camera *init()
 
     pixels = new unsigned char[w * h + 1];
     pixels[w * h] = 0;
-    clear();
+    clear_buffer();
 
     printf("\033[?1049h\033[?25l\033[2J");
     draw();
@@ -318,7 +303,7 @@ camera *init()
     return &cam;
 }
 
-void quit()
+void render_quit()
 {
     printf("\033[H\033[?1049l\033[?25h");
     fflush(stdout);

@@ -1,10 +1,10 @@
-#include "model.hpp"
+#include "3d/model.hpp"
 
 #include <stdio.h>
 #include <vector>
 #include <stdexcept>
 
-#include "maths.hpp"
+#include "3d/maths.hpp"
 
 mesh loadModel(char *path)
 {
@@ -12,13 +12,14 @@ mesh loadModel(char *path)
     vec3 v;
     int vertexIds[4];
     std::vector<vec3> vertex;
+    unsigned int opacity = DEFAULT_OPACITY;
 
     char ch = 0;
 
     FILE *f = fopen(path, "r");
 
     if (f == nullptr)
-        return mesh();
+        return m;
 
     while (ch != EOF)
     {
@@ -26,7 +27,7 @@ mesh loadModel(char *path)
 
         if (ch == EOF)
             break;
-        
+
         if (ch == 'v' && fgetc(f) == ' ')
         {
             if (fscanf(f, "%lf %lf %lf", &v.x, &v.y, &v.z) != 3)
@@ -57,12 +58,16 @@ mesh loadModel(char *path)
                     throw std::runtime_error("Invalid face definition in " + std::string(path) + ": Vertex " + std::to_string(i) + " not found");
             }
 
-            m.push_back({{vertex[vertexIds[0]-1], vertex[vertexIds[1]-1], vertex[vertexIds[2]-1]}, DEFAULT_OPACITY});
+            m.push_back({{vertex[vertexIds[0]-1], vertex[vertexIds[1]-1], vertex[vertexIds[2]-1]}, (unsigned char) opacity});
 
             if (vertexIds[3] != -1)
             {
-                m.push_back({{vertex[vertexIds[2]-1], vertex[vertexIds[3]-1], vertex[vertexIds[0]-1]}, DEFAULT_OPACITY});
+                m.push_back({{vertex[vertexIds[2]-1], vertex[vertexIds[3]-1], vertex[vertexIds[0]-1]}, (unsigned char) opacity});
             }
+        }
+        else if (ch == '#' && fscanf(f, "opacity %u", &opacity) == 1)
+        {
+            // opacity changed
         }
 
         while (ch != '\n' && ch != '\r')
@@ -77,4 +82,24 @@ mesh loadModel(char *path)
     fclose(f);
 
     return m;
+}
+
+void moveMesh(mesh *m, vec3 v)
+{
+    for (int i = 0; i < m->size(); i++)
+    {
+        triangle3Translate(&(*m)[i].tri, v);
+    }
+}
+
+mesh moveMesh(mesh m, vec3 v)
+{
+    mesh new_m;
+
+    for (int i = 0; i < m.size(); i++)
+    {
+        new_m.push_back({triangle3Translate(m[i].tri, v), m[i].opacity});
+    }
+
+    return new_m;
 }

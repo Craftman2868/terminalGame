@@ -50,3 +50,5 @@ char getch();
 
 // Wait for a key event
 void getkey(Key *key);
+
+bool getkey_noblock(Key *res);

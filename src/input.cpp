@@ -59,10 +59,10 @@ bool hasch()
 // Read 1 character
 char getch()
 {
-    // return getchar();
-    char ch = getchar();
+    return getchar();
+    // char ch = getchar();
     // printf("%d", ch);
-    return ch;
+    // return ch;
 }
 
 // Wait for a key event
@@ -152,4 +152,18 @@ void getkey(Key *res)
     res->ch = ch;
 
     // printf("(%d %d)", res->ch, res->key);
+}
+
+bool getkey_noblock(Key *res)
+{
+    if (hasch())
+    {
+        getkey(res);
+        return true;
+    }
+    
+    res->key = KEY_NULL;
+    res->ch = 0;
+
+    return false;
 }
