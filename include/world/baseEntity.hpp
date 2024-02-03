@@ -21,9 +21,8 @@ protected:
     Game *game;
     EntityType type;
     float accel;
+    float maxSpeed;
     vec3 velocity;
-    unsigned char life;
-    unsigned char max_life;
     bool gravity;
 
 public:
@@ -33,15 +32,34 @@ public:
     // Moves
     virtual vec3 getPos();
     virtual void setPos(vec3 pos);
-    void move(vec3 v) { setPos(addVec3(getPos(), v)); }
 
-    virtual double getYaw();
-    virtual double getPitch();
 
-    virtual void setYaw(double yaw);
-    virtual void setPitch(double pitch);
+    void forceMove(vec3 v)
+    {
+        setPos(addVec3(getPos(), v));
+    }
 
-    void setDirection(double yaw, double pitch)
+    bool canMove(vec3 v);
+
+    void move(vec3 v)
+    {
+#if COLLISION
+        if (canMove(v))
+        {
+            forceMove(v);
+        }
+#else
+        forceMove(v);
+#endif
+    }
+
+    virtual float getYaw();
+    virtual float getPitch();
+
+    virtual void setYaw(float yaw);
+    virtual void setPitch(float pitch);
+
+    void setDirection(float yaw, float pitch)
     {
         setYaw(yaw);
         setPitch(pitch);
@@ -60,18 +78,21 @@ public:
     vec3 getForwardDirection() { return {-std::sin(getYaw()), 0, std::cos(getYaw())}; }
     vec3 getRightDirection() { return {std::cos(getYaw()), 0, std::sin(getYaw())}; }
 
-    double getSpeed() { return lengthVec3(velocity); }
-    void setSpeed(double speed) { velocity = mulVec3(normalizeVec3(velocity), speed); }
+    float getSpeed() { return lengthVec3(velocity); }
+    void setSpeed(float speed) { velocity = mulVec3(normalizeVec3(velocity), speed); }
 
     float getAccel() { return accel; }
     void setAccel(float accel) { this->accel = accel; };
 
+    float getMaxSpeed() { return maxSpeed; }
+    void setMaxSpeed(float maxSpeed) { this->maxSpeed = maxSpeed; };
+
     void go(vec3 v)
     {
-        addVec3(&velocity, v);
+        velocity = addVec3(velocity, v);
 
-        if (getSpeed() > MAX_SPEED)
-            setSpeed(MAX_SPEED);
+        if (getSpeed() > maxSpeed)
+            setSpeed(maxSpeed);
     }
 
     void goForward(float accel) { go(mulVec3(getForwardDirection(), accel)); }
@@ -102,7 +123,7 @@ public:
             goDown(GRAVITY);
         }
 
-        mulVec3(&velocity, (double)1 / (1 + GRAVITY));
+        velocity = mulVec3(velocity, (float)1 / (1 + GRAVITY));
     }
     virtual void updatePos() { move(velocity); };
 

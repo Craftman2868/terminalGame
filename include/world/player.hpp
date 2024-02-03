@@ -10,11 +10,11 @@ public:
     virtual vec3 getPos();
     virtual void setPos(vec3 pos);
 
-    virtual double getYaw();
-    virtual double getPitch();
+    virtual float getYaw();
+    virtual float getPitch();
 
-    virtual void setYaw(double yaw);
-    virtual void setPitch(double pitch);
+    virtual void setYaw(float yaw);
+    virtual void setPitch(float pitch);
 
     virtual mesh render();
 };

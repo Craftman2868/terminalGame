@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <stdint.h>
 
 #include "3d/maths.hpp"
 
@@ -8,7 +9,7 @@
 
 typedef struct {
     triangle3 tri;
-    unsigned char opacity;
+    uint8_t opacity;
 } renderTriangle;
 
 typedef std::vector<renderTriangle> mesh;

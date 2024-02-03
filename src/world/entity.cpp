@@ -1,6 +1,6 @@
 #include "world/entity.hpp"
 
-Entity::Entity(Game *game, EntityType type, vec3 pos, double yaw, double pitch) : BaseEntity(game)
+Entity::Entity(Game *game, EntityType type, vec3 pos, float yaw, float pitch) : BaseEntity(game)
 {
     this->accel = DEFAULT_ACCEL;
     this->type = type;

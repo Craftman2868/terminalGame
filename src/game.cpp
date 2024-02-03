@@ -28,6 +28,8 @@ Game::Game() : pl(this), renderer((lightSource){{0, 0, 0}})
 
 void Game::tick()
 {
+    render_tick();
+
     if (time_ms() - last_tick < MS_PER_TICK)
     {
         std::this_thread::sleep_for(MS_PER_TICK - (time_ms() - last_tick));
@@ -98,12 +100,15 @@ void Game::check_input()
             else if (pl.getAccel() > 10)
                 break;
             pl.setAccel(pl.getAccel() * 2);
+            pl.setMaxSpeed(pl.getMaxSpeed() * 2);
             break;
         case '-':
             pl.setAccel(pl.getAccel() / 2);
+            pl.setMaxSpeed(pl.getMaxSpeed() / 2);
             break;
         case '*':
             pl.setAccel(DEFAULT_ACCEL);
+            pl.setMaxSpeed(MAX_SPEED);
             break;
         case 'F':
             cam->fl += 0.1;

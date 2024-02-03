@@ -20,6 +20,7 @@ typedef struct {
 vec2 vecToScreen(vec2 v);
 triangle2 triangleToScreen(triangle2 tri);
 
+void render_tick();
 void draw();
 void fill(unsigned char px);
 void clear_buffer();
@@ -29,7 +30,7 @@ void putPixel(unsigned int x, unsigned int y, unsigned char px);
 void putPixel(vec2 pos, unsigned char px, unsigned char opacity);
 void putPixel(vec2 pos, unsigned char px);
 
-double eq(vec2 p, vec2 a, vec2 b);
+float eq(vec2 p, vec2 a, vec2 b);
 void putScreenTriangle(triangle2 tri, unsigned char px, unsigned char opacity);
 void putScreenTriangle(triangle2 tri, unsigned char px);
 void putTriangle2(triangle2 tri, unsigned char px, unsigned char opacity);
@@ -44,7 +45,7 @@ char diffuseLight(lightSource light, vec3 normal, vec3 vec);
 
 uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangles);
 
-double triangleDist(triangle3 tri);  // The distance between the triangle and the camera
+float triangleDist(triangle3 tri);  // The distance between the triangle and the camera
 
 void putMesh(mesh m);
 void putMesh(mesh m, lightSource light);

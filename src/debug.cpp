@@ -18,7 +18,7 @@ void debug_init()
 
 #define _debug_log_arg(obj, arg) {_debug_log("  " #arg " = "); debug_log_obj(obj.arg); _debug_log(",\n");}
 
-void debug_log_obj(double n)
+void debug_log_obj(float n)
 {
     _debug_log("%f", n);
 }

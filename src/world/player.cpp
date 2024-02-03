@@ -17,22 +17,22 @@ void Player::setPos(vec3 pos)
     game->cam->pos = pos;
 }
 
-double Player::getYaw()
+float Player::getYaw()
 {
     return game->cam->yaw;
 }
 
-double Player::getPitch()
+float Player::getPitch()
 {
     return game->cam->pitch;
 }
 
-void Player::setYaw(double yaw)
+void Player::setYaw(float yaw)
 {
     game->cam->yaw = yaw;
 }
 
-void Player::setPitch(double pitch)
+void Player::setPitch(float pitch)
 {
     game->cam->pitch = pitch;
 }

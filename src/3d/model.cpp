@@ -14,7 +14,7 @@ mesh loadModel(char *path)
     std::vector<vec3> vertex;
     unsigned int opacity = DEFAULT_OPACITY;
 
-    char ch = 0;
+    int ch = 0;
 
     FILE *f = fopen(path, "r");
 
@@ -30,7 +30,7 @@ mesh loadModel(char *path)
 
         if (ch == 'v' && fgetc(f) == ' ')
         {
-            if (fscanf(f, "%lf %lf %lf", &v.x, &v.y, &v.z) != 3)
+            if (fscanf(f, "%f %f %f", &v.x, &v.y, &v.z) != 3)
                 throw std::runtime_error("Invalid vertex definition in " + std::string(path));
 
             vertex.push_back(v);

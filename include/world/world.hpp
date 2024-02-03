@@ -6,10 +6,9 @@
 
 class World
 {
-private:
+public:
     std::vector<BaseEntity *> entities;
 
-public:
     World();
 
     void update();

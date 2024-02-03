@@ -12,15 +12,25 @@ unsigned int w = 20, h = 20;
 unsigned char *pixels;
 camera cam;
 
+#if TICKER
+bool tick = true;
+#endif
 
 vec2 vecToScreen(vec2 v)
 {
-    return {(CHAR_RATIO * ((double) h) / ((double) w) * v.x + 1) * w / 2, (-v.y + 1) * h / 2};
+    return {(CHAR_RATIO * ((float) h) / ((float) w) * v.x + 1) * w / 2, (-v.y + 1) * h / 2};
 }
 
 triangle2 triangleToScreen(triangle2 tri)
 {
     return {vecToScreen(tri.p1), vecToScreen(tri.p2), vecToScreen(tri.p3)};
+}
+
+void render_tick()
+{
+#if TICKER
+    tick = !tick;
+#endif
 }
 
 void draw()
@@ -35,7 +45,11 @@ void draw()
         }
     }
 
+#if TICKER
+    printf("\n%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f / %4.1f      %s", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw, cam.fl, (tick ? "[o| ]" : "[ |o]"));
+#else
     printf("\n%7.3f  %7.3f  %7.3f  /  %6.3f  %6.3f / %4.1f", cam.pos.x, cam.pos.y, cam.pos.z, cam.pitch, cam.yaw, cam.fl);
+#endif
     fflush(stdout);
 }
 
@@ -72,11 +86,6 @@ void putPixel(vec2 pos, unsigned char px)
     putPixel(toInt(pos.x), toInt(pos.y), px);
 }
 
-double eq(vec2 p, vec2 a, vec2 b)
-{
-    return (a.x-p.x)*(b.y-p.y)-(a.y-p.y)*(b.x-p.x);
-}
-
 void putScreenTriangle(triangle2 tri, unsigned char px, unsigned char opacity)
 {
     int xmin = toInt(std::min(std::min(tri.p1.x, tri.p2.x), tri.p3.x));
@@ -89,13 +98,8 @@ void putScreenTriangle(triangle2 tri, unsigned char px, unsigned char opacity)
             for (int x = xmin; x < xmax; x++)
                 if (0 <= x && x < w)
                 {
-                    vec2 pos = {(double) x, (double) y};
-                    double w1 = eq(pos, tri.p3, tri.p1);
-                    double w2 = eq(pos, tri.p1, tri.p2);
-                    double w3 = eq(pos, tri.p2, tri.p3);
-
-                    if ((w1 >= 0 && w2 >= 0 && w3 >= 0) || (-w1 >= 0 && -w2 >= 0 && -w3 >= 0))
-                        putPixel(pos, px, opacity);
+                    if (inTriangle(tri, {(float) x, (float) y}))
+                        putPixel(x, y, px, opacity);
                 }
 }
 
@@ -136,7 +140,7 @@ void putPoint(vec3 p, unsigned char px)
 
 char diffuseLight(lightSource light, vec3 normal, vec3 vec)
 {
-    double intensity = dotVec3(normalizeVec3(subVec3(light.pos, vec)), normalizeVec3(normal));  // -1 < intensity < 1
+    float intensity = dotVec3(normalizeVec3(subVec3(light.pos, vec)), normalizeVec3(normal));  // -1 < intensity < 1
 
     if (intensity <= 0)
         return 0;
@@ -218,9 +222,9 @@ uint8_t clipTriangle3(triangle3 tri, vec3 planeNormal, triangle3 *clippedTriangl
     }
 }
 
-double triangleDist(triangle3 tri)
+float triangleDist(triangle3 tri)
 {
-    vec3 pos = mulVec3(addVec3(tri.p1, addVec3(tri.p2, tri.p3)), (double) 1/3);
+    vec3 pos = mulVec3(addVec3(tri.p1, addVec3(tri.p2, tri.p3)), (float) 1/3);
 
     subVec3(&pos, cam.pos);
 
@@ -234,10 +238,7 @@ bool compTriangleDist(renderTriangle tri1, renderTriangle tri2)
 
 bool isVisible(triangle3 tri)
 {
-    vec3 line1 = subVec3(tri.p2, tri.p1);
-    vec3 line2 = subVec3(tri.p3, tri.p1);
-
-    vec3 normal = mulVec3(crossProdVec3(line1, line2), -1);
+    vec3 normal = mulVec3(triangleNormal(tri), -1);
 
     return dotVec3(normal, subVec3(tri.p1, cam.pos)) > 0;
 }
@@ -257,7 +258,7 @@ void putMesh(mesh m, lightSource light)
         for (uint8_t i = 0; i < triN; i++)
             if (isVisible(clippedTriangles[i]))
             {
-                ch = diffuseLight(light, crossProdVec3(subVec3(clippedTriangles[i].p2, clippedTriangles[i].p1), subVec3(clippedTriangles[i].p3, clippedTriangles[i].p1)), clippedTriangles[i].p1);
+                ch = diffuseLight(light, triangleNormal(clippedTriangles[i]), clippedTriangles[i].p1);
                 putTriangle3(triangle3Rotate(triangle3Translate(clippedTriangles[i], mulVec3(cam.pos, -1)), cam.pitch, cam.yaw), ch, rt.opacity);
             }
     }
